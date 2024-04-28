@@ -1,8 +1,14 @@
 use std::io::{stderr, Write};
 
+mod color;
+use color::Color;
+
+// mod vector;
+// use vector::Vec3;
+
 fn main() {
-    const IMAGE_WIDTH: u64 = 256;
-    const IMAGE_HEIGHT: u64 = 256;
+    const IMAGE_WIDTH: u64 = 1024;
+    const IMAGE_HEIGHT: u64 = 1024;
 
     println!("P3");
     println!("{IMAGE_WIDTH} {IMAGE_HEIGHT}");
@@ -13,17 +19,14 @@ fn main() {
         stderr().flush().unwrap();
 
         for x in 0..IMAGE_WIDTH {
-            let r = x as f64 / (IMAGE_WIDTH - 1) as f64;
-            let g = y as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let b = 0.0;
-
-            let almost_256 = 255.999;
-            let ir = (almost_256 * r) as u64;
-            let ig = (almost_256 * g) as u64;
-            let ib = (almost_256 * b) as u64;
-
-            println!("{ir} {ig} {ib}");
+            let c = Color::new(
+                x as f64 / (IMAGE_WIDTH - 1) as f64,
+                y as f64 / (IMAGE_HEIGHT - 1) as f64,
+                0.5,
+            );
+            println!("{}", c.as_ppm_tuple());
         }
     }
+
     eprintln!("\nDone.");
 }
