@@ -3,8 +3,8 @@ use std::io::{stderr, Write};
 mod color;
 use color::Color;
 
-// mod vector;
-// use vector::Vec3;
+mod vector;
+use vector::Vec3;
 
 fn main() {
     const IMAGE_WIDTH: u64 = 1024;
