@@ -12,7 +12,7 @@ use vector::Vec3;
 use crate::vector::Point3;
 
 fn main() {
-    const IMAGE_HEIGHT: u64 = 800;
+    const IMAGE_HEIGHT: u64 = 1200;
     const IMAGE_WIDTH: u64 = IMAGE_HEIGHT * 16 / 9; // 16:9 aspect ratio.
 
     // Set up the camera.
@@ -60,18 +60,24 @@ fn main() {
     eprintln!("\nDone.");
 }
 
-fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
     let oc = *center - ray.origin();
     let a = ray.direction().dot(ray.direction());
     let b = ray.direction().dot(oc) * -2.0;
     let c = oc.dot(oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
-    discriminant >= 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant.sqrt()) / (2.0 * a)
+    }
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray);
+    if t > 0.0 {
+        let n = (ray.at(t) - Vec3::new(0.0,0.0,-1.0) + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
+        return Color::new(n.x(), n.y(), n.z());
     }
 
     let unit_direction = ray.direction().unit_vector();
