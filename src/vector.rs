@@ -9,7 +9,7 @@ use std::{
 pub type Point3 = Vec3;
 
 /// A 3D vector.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Vec3 {
     e: [f64; 3],
 }
