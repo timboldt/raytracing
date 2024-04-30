@@ -40,7 +40,7 @@ impl Vec3 {
     }
 
     pub fn dot(&self, other: Self) -> f64 {
-        self[0] * other[0] + self[1] + other[1] + self[2] + other[2]
+        self[0] * other[0] + self[1] * other[1] + self[2] * other[2]
     }
 
     pub fn cross(&self, other: Self) -> Self {
