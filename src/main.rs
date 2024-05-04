@@ -1,19 +1,26 @@
 use std::io::{stderr, Write};
 
 mod color;
-use color::Color;
-
+mod hit;
 mod ray;
-use ray::Ray;
-
+mod sphere;
 mod vector;
-use vector::Vec3;
 
-use crate::vector::Point3;
+use color::Color;
+use hit::{Hit, World};
+use ray::Ray;
+use sphere::Sphere;
+use vector::{Point3, Vec3};
 
 fn main() {
     const IMAGE_HEIGHT: u64 = 1200;
     const IMAGE_WIDTH: u64 = IMAGE_HEIGHT * 16 / 9; // 16:9 aspect ratio.
+
+    // World
+    let mut world = World::new();
+    world.push(Box::new(Sphere::new(Point3::new(0.5, 0.5, -2.0), 0.5)));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, 0.0, -2.0), 0.5)));
+    world.push(Box::new(Sphere::new(Point3::new(0.0, -100.5, -2.0), 100.0)));
 
     // Set up the camera.
     const FOCAL_LENGTH: f64 = 1.0;
@@ -49,9 +56,9 @@ fn main() {
             let pixel_center =
                 pixel00_loc + (pixel_delta_u * x as f64) + (pixel_delta_v * y as f64);
             let ray_direction = pixel_center - camera_center;
-            let r = Ray::new(camera_center, ray_direction);
+            let ray = Ray::new(camera_center, ray_direction);
 
-            let c = ray_color(&r);
+            let c = ray_color(&ray, &world);
             println!("{}", c.as_ppm_tuple());
         }
     }
@@ -60,31 +67,16 @@ fn main() {
     eprintln!("\nDone.");
 }
 
-fn hit_sphere(center: &Point3, radius: f64, ray: &Ray) -> f64 {
-    let oc = *center - ray.origin();
-    let a = ray.direction().length_squared();
-    let h = ray.direction().dot(oc);
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = h * h - a * c;
-    if discriminant < 0.0 {
-        -1.0
+fn ray_color(ray: &Ray, world: &World) -> Color {
+    if let Some(rec) = world.hit(ray, 0.0, f64::INFINITY) {
+        let n = (rec.normal + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
+        Color::new(n.x(), n.y(), n.z())
     } else {
-        (h - discriminant.sqrt()) / a
+        let unit_direction = ray.direction().unit_vector();
+        let a = (unit_direction.y() + 1.0) * 0.5;
+        let r = 1.0 - a + a * 0.5;
+        let g = 1.0 - a + a * 0.7;
+        let b = 1.0 - a + a * 1.0;
+        Color::new(r, g, b)
     }
-}
-
-fn ray_color(ray: &Ray) -> Color {
-    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray);
-    if t > 0.0 {
-        let n = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0) + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
-        return Color::new(n.x(), n.y(), n.z());
-    }
-
-    let unit_direction = ray.direction().unit_vector();
-    let a = (unit_direction.y() + 1.0) * 0.5;
-
-    let r = 1.0 - a + a * 0.5;
-    let g = 1.0 - a + a * 0.7;
-    let b = 1.0 - a + a * 1.0;
-    Color::new(r, g, b)
 }
