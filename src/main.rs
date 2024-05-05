@@ -2,12 +2,14 @@ use std::io::{stderr, Write};
 
 mod color;
 mod hit;
+mod interval;
 mod ray;
 mod sphere;
 mod vector;
 
 use color::Color;
 use hit::{Hit, World};
+use interval::Interval;
 use ray::Ray;
 use sphere::Sphere;
 use vector::{Point3, Vec3};
@@ -68,7 +70,7 @@ fn main() {
 }
 
 fn ray_color(ray: &Ray, world: &World) -> Color {
-    if let Some(rec) = world.hit(ray, 0.0, f64::INFINITY) {
+    if let Some(rec) = world.hit(ray, &Interval::new(0.0, f64::INFINITY)) {
         let n = (rec.normal + Vec3::new(1.0, 1.0, 1.0)) * 0.5;
         Color::new(n.x(), n.y(), n.z())
     } else {
